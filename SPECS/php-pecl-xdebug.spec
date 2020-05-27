@@ -187,6 +187,7 @@ TEST_OPTS="-q -x --show-diff"
 TEST_PHP_EXECUTABLE=%{_bindir}/php \
 TEST_PHP_ARGS="-n $modules -d zend_extension=%{buildroot}%{php_extdir}/%{pecl_name}.so -d xdebug.auto_trace=0 -d foo=yes" \
 REPORT_EXIT_STATUS=1 \
+DBGP_IDEKEY="" \
 %{__php} -n run-xdebug-tests.php $TEST_OPTS
 %else
 : Test suite disabled
