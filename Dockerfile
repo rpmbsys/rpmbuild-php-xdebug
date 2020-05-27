@@ -14,5 +14,5 @@ RUN chown -R $BUILD_USER ${BUILD_TOPDIR}/{SOURCES,SPECS}
 
 USER $BUILD_USER
 
-ENTRYPOINT ["/usr/bin/rpmbuild", "php-pecl-ssh2.spec"]
+ENTRYPOINT ["/usr/bin/rpmbuild", "php-pecl-xdebug.spec"]
 CMD ["-ba"]
