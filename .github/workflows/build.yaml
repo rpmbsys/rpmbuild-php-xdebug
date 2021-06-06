@@ -32,14 +32,6 @@ jobs:
             repo: php73custom
             build: centos8xdebugphp73
             uploader: centos8bintray
-          - compose-file: docker-compose.php80.yml
-            repo: php8custom
-            build: centos7xdebugphp80
-            uploader: centos7bintray
-          - compose-file: docker-compose.php80.yml
-            repo: php8custom
-            build: centos8xdebugphp80
-            uploader: centos8bintray
     env:
       BUILD_COMPOSE_FILE: ${{ matrix.compose-file }}
       BINTRAY_REPO: ${{ matrix.repo }}
