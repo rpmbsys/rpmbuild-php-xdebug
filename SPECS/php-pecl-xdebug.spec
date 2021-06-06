@@ -12,15 +12,18 @@
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
 
+%define _debugsource_template %{nil}
+%define debug_package %{nil}
+
 %global pecl_name  xdebug
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
-%global gh_commit  1f11f5a389cfcebf8e1ca64e092f75be9224abea
+%global gh_commit  3e09864af111d63b7eb486d88bfc6eb7d6429b85
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 # XDebug should be loaded after opcache
 %global ini_name   15-%{pecl_name}.ini
 %global with_tests 0%{!?_without_tests:1}
 # version/release
-%global upstream_version 2.9.5
+%global upstream_version 2.9.8
 #global upstream_prever  beta2
 #global upstream_lower   beta2
 
@@ -210,6 +213,9 @@ XDEBUG_CONFIG="idekey=dr" \
 
 
 %changelog
+* Mon Sep 28 2020 Remi Collet <remi@remirepo.net> - 2.9.8-1
+- update to 2.9.8
+
 * Mon Apr 27 2020 Remi Collet <remi@remirepo.net> - 2.9.5-1
 - update to 2.9.5
 
