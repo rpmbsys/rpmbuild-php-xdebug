@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-xdebug
 #
-# Copyright (c) 2010-2020 Remi Collet
+# Copyright (c) 2010-2021 Remi Collet
 # Copyright (c) 2006-2009 Christopher Stone
 #
 # License: MIT
@@ -8,6 +8,8 @@
 #
 # Please, preserve the changelog entries
 #
+
+%bcond_without      tests
 
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
@@ -17,32 +19,35 @@
 
 %global pecl_name  xdebug
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
-%global gh_commit  3e09864af111d63b7eb486d88bfc6eb7d6429b85
+%global gh_commit  54c7c2521763ee522809de0c54311443b11343c1
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
-# XDebug should be loaded after opcache
-%global ini_name   15-%{pecl_name}.ini
-%global with_tests 0%{!?_without_tests:1}
+
 # version/release
-%global upstream_version 2.9.8
-#global upstream_prever  beta2
-#global upstream_lower   beta2
+%global upstream_version 3.0.4
+#global upstream_prever  RC1
+#global upstream_lower   rc1
+
+# XDebug should be loaded after opcache
+%global ini_name  15-%{pecl_name}.ini
 
 Name:           php-pecl-xdebug
-Summary:        PECL package for debugging PHP scripts
+Summary:        Provides functions for function traces and profiling
 Version:        %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
 Release:        1%{?dist}
 Source0:        https://github.com/%{pecl_name}/%{pecl_name}/archive/%{gh_commit}/%{pecl_name}-%{upstream_version}%{?upstream_prever}-%{gh_short}.tar.gz
 
 # The Xdebug License, version 1.01
 # (Based on "The PHP License", version 3.0)
-License:        PHP
+License:        BSD
 URL:            https://xdebug.org/
 
-BuildRequires:  php-pear  > 1.9.1
-BuildRequires:  php-devel > 7.1
+BuildRequires:  gcc
+BuildRequires:  make
+BuildRequires:  php-devel >= 7.2
+BuildRequires:  php-pear
 BuildRequires:  php-simplexml
-BuildRequires:  libedit-devel
 BuildRequires:  libtool
+BuildRequires:  php-soap
 
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
@@ -51,7 +56,6 @@ Provides:       php-%{pecl_name} = %{version}
 Provides:       php-%{pecl_name}%{?_isa} = %{version}
 Provides:       php-pecl(Xdebug) = %{version}
 Provides:       php-pecl(Xdebug)%{?_isa} = %{version}
-
 
 %description
 The Xdebug extension helps you debugging your script by providing a lot of
@@ -99,6 +103,9 @@ cat << 'EOF' | tee %{ini_name}
 ; Enable xdebug extension module
 zend_extension=%{pecl_name}.so
 
+; Configuration
+; See https://xdebug.org/docs/all_settings
+
 EOF
 sed -e '1d' NTS/%{pecl_name}.ini >>%{ini_name}
 
@@ -110,14 +117,6 @@ cd NTS
     --enable-xdebug  \
     --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
-
-# Build debugclient
-pushd debugclient
-# buildconf required for aarch64 support
-./buildconf
-%configure --with-libedit
-make %{?_smp_mflags}
-popd
 
 %if %{with_zts}
 cd ../ZTS
@@ -132,10 +131,6 @@ make %{?_smp_mflags}
 %install
 # install NTS extension
 make -C NTS install INSTALL_ROOT=%{buildroot}
-
-# install debugclient
-install -Dpm 755 NTS/debugclient/debugclient \
-        %{buildroot}%{_bindir}/debugclient
 
 # install package registration file
 install -Dpm 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
@@ -180,7 +175,7 @@ done
     --modules | grep Xdebug
 %endif
 
-%if %{with_tests}
+%if %{with tests}
 cd NTS
 
 : Upstream test suite NTS extension
@@ -188,7 +183,7 @@ cd NTS
 TEST_OPTS="-q -x --show-diff"
 
 TEST_PHP_EXECUTABLE=%{_bindir}/php \
-TEST_PHP_ARGS="-n $modules -d zend_extension=%{buildroot}%{php_extdir}/%{pecl_name}.so -d xdebug.auto_trace=0 -d foo=yes" \
+TEST_PHP_ARGS="-n $modules -d zend_extension=%{buildroot}%{php_extdir}/%{pecl_name}.so" \
 REPORT_EXIT_STATUS=1 \
 XDEBUG_CONFIG="idekey=dr" \
 %{__php} -n run-xdebug-tests.php $TEST_OPTS
@@ -196,11 +191,9 @@ XDEBUG_CONFIG="idekey=dr" \
 : Test suite disabled
 %endif
 
-
 %files
 %license NTS/LICENSE
 %doc %{pecl_docdir}/%{pecl_name}
-%{_bindir}/debugclient
 %{pecl_xmldir}/%{name}.xml
 
 %config(noreplace) %{php_inidir}/%{ini_name}
@@ -213,6 +206,11 @@ XDEBUG_CONFIG="idekey=dr" \
 
 
 %changelog
+* Thu Apr  8 2021 Remi Collet <remi@remirepo.net> - 3.0.4-1
+- update to 3.0.4
+- debugclient dropped upstream
+- raise dependency on PHP 7.2
+
 * Mon Sep 28 2020 Remi Collet <remi@remirepo.net> - 2.9.8-1
 - update to 2.9.8
 
