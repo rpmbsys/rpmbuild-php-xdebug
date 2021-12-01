@@ -19,11 +19,11 @@
 
 %global pecl_name  xdebug
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
-%global gh_commit  54c7c2521763ee522809de0c54311443b11343c1
+%global gh_commit  f8d0dac50e3b7bebf370054b4940abbb10740234
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 
 # version/release
-%global upstream_version 3.0.4
+%global upstream_version 3.1.1
 #global upstream_prever  RC1
 #global upstream_lower   rc1
 
@@ -206,6 +206,9 @@ XDEBUG_CONFIG="idekey=dr" \
 
 
 %changelog
+* Fri Oct 15 2021 Remi Collet <remi@remirepo.net> - 3.1.1-1
+- update to 3.1.1
+
 * Thu Apr  8 2021 Remi Collet <remi@remirepo.net> - 3.0.4-1
 - update to 3.0.4
 - debugclient dropped upstream
