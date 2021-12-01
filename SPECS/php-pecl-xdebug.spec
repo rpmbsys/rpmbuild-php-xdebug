@@ -52,10 +52,10 @@ BuildRequires:  php-soap
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
 
-Provides:       php-%{pecl_name} = %{version}
-Provides:       php-%{pecl_name}%{?_isa} = %{version}
-Provides:       php-pecl(Xdebug) = %{version}
-Provides:       php-pecl(Xdebug)%{?_isa} = %{version}
+Provides:       php-%{pecl_name}              = %{version}
+Provides:       php-%{pecl_name}%{?_isa}      = %{version}
+Provides:       php-pecl(Xdebug)              = %{version}
+Provides:       php-pecl(Xdebug)%{?_isa}      = %{version}
 
 %description
 The Xdebug extension helps you debugging your script by providing a lot of
@@ -177,15 +177,14 @@ done
 
 %if %{with tests}
 cd NTS
-
 : Upstream test suite NTS extension
+
 # bug00886 is marked as slow as it uses a lot of disk space
 TEST_OPTS="-q -x --show-diff"
 
 TEST_PHP_EXECUTABLE=%{_bindir}/php \
 TEST_PHP_ARGS="-n $modules -d zend_extension=%{buildroot}%{php_extdir}/%{pecl_name}.so" \
 REPORT_EXIT_STATUS=1 \
-XDEBUG_CONFIG="idekey=dr" \
 %{__php} -n run-xdebug-tests.php $TEST_OPTS
 %else
 : Test suite disabled
