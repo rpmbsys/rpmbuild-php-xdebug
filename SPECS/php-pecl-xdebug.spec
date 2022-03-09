@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-xdebug
 #
-# Copyright (c) 2010-2021 Remi Collet
+# Copyright (c) 2010-2022 Remi Collet
 # Copyright (c) 2006-2009 Christopher Stone
 #
 # License: MIT
@@ -19,11 +19,11 @@
 
 %global pecl_name  xdebug
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
-%global gh_commit  f8d0dac50e3b7bebf370054b4940abbb10740234
+%global gh_commit  a4bc37ed4804a0ce037a7c80054557a9c346f44e
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 
 # version/release
-%global upstream_version 3.1.1
+%global upstream_version 3.1.3
 #global upstream_prever  RC1
 #global upstream_lower   rc1
 
@@ -205,6 +205,9 @@ REPORT_EXIT_STATUS=1 \
 
 
 %changelog
+* Wed Feb  2 2022 Remi Collet <remi@remirepo.net> - 3.1.3-1
+- update to 3.1.3
+
 * Fri Oct 15 2021 Remi Collet <remi@remirepo.net> - 3.1.1-1
 - update to 3.1.1
 
