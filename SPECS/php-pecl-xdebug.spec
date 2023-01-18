@@ -19,11 +19,11 @@
 
 %global pecl_name  xdebug
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
-%global gh_commit  a4bc37ed4804a0ce037a7c80054557a9c346f44e
+%global gh_commit  2fe95fed7ee9f1f679680db641f4f48c3f381057
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 
 # version/release
-%global upstream_version 3.1.3
+%global upstream_version 3.1.6
 #global upstream_prever  RC1
 #global upstream_lower   rc1
 
@@ -44,6 +44,7 @@ URL:            https://xdebug.org/
 BuildRequires:  gcc
 BuildRequires:  make
 BuildRequires:  php-devel >= 7.2
+BuildRequires:  php-devel <  8.2
 BuildRequires:  php-pear
 BuildRequires:  php-simplexml
 BuildRequires:  libtool
@@ -56,6 +57,15 @@ Provides:       php-%{pecl_name}              = %{version}
 Provides:       php-%{pecl_name}%{?_isa}      = %{version}
 Provides:       php-pecl(Xdebug)              = %{version}
 Provides:       php-pecl(Xdebug)%{?_isa}      = %{version}
+
+%if 0%{?fedora} >= 35 || 0%{?rhel} >= 9 || "%{php_version}" > "8.0"
+Obsoletes:     php-pecl-%{pecl_name}          < 3
+Provides:      php-pecl-%{pecl_name}          = %{version}-%{release}
+Provides:      php-pecl-%{pecl_name}%{?_isa}  = %{version}-%{release}
+%else
+# A single version can be installed
+Conflicts:     php-pecl-%{pecl_name}          < 3
+%endif
 
 %description
 The Xdebug extension helps you debugging your script by providing a lot of
@@ -179,6 +189,11 @@ done
 cd NTS
 : Upstream test suite NTS extension
 
+# see https://bugs.xdebug.org/view.php?id=2048
+rm tests/base/bug02036.phpt
+# Erratic result
+rm tests/debugger/bug00998-ipv6.phpt
+
 # bug00886 is marked as slow as it uses a lot of disk space
 TEST_OPTS="-q -x --show-diff"
 
@@ -205,6 +220,9 @@ REPORT_EXIT_STATUS=1 \
 
 
 %changelog
+* Tue Nov  8 2022 Remi Collet <remi@remirepo.net> - 3.1.6-1
+- update to 3.1.6
+
 * Wed Feb  2 2022 Remi Collet <remi@remirepo.net> - 3.1.3-1
 - update to 3.1.3
 
