@@ -19,31 +19,16 @@ jobs:
       matrix:
         include:
           - compose-file: docker-compose.yml
-            repo: php74custom
-            build: centos7build
-            uploader: centos7bintray
-            repo_path: ""
-          - compose-file: docker-compose.yml
-            repo: php74custom
-            build: rocky8build
-            uploader: rocky8bintray
-            repo_path: rocky/8
-          - compose-file: docker-compose.yml
-            repo: php74custom
-            build: stream9build
-            uploader: stream9bintray
-            repo_path: centos/9-stream
-          - compose-file: docker-compose.php81.yml
             repo: php81custom
             build: centos7build
             uploader: centos7bintray
             repo_path: ""
-          - compose-file: docker-compose.php81.yml
+          - compose-file: docker-compose.yml
             repo: php81custom
             build: rocky8build
             uploader: rocky8bintray
             repo_path: rocky/8
-          - compose-file: docker-compose.php81.yml
+          - compose-file: docker-compose.yml
             repo: php81custom
             build: stream9build
             uploader: stream9bintray

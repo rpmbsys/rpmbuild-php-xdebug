@@ -9,7 +9,7 @@
 # Please, preserve the changelog entries
 #
 
-%bcond_without      tests
+%bcond_without     tests
 
 # we don't want -z defs linker flag
 %undefine _strict_symbol_defs_build
@@ -19,13 +19,13 @@
 
 %global pecl_name  xdebug
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
-%global gh_commit  2fe95fed7ee9f1f679680db641f4f48c3f381057
+%global gh_commit  77aaa48269a6b0be19cf1557dd8d2e9f1fa211e9
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 
 # version/release
-%global upstream_version 3.1.6
-#global upstream_prever  RC1
-#global upstream_lower   rc1
+%global upstream_version 3.2.0
+#global upstream_prever  RC2
+#global upstream_lower   %%(echo %%{upstream_prever} | tr '[:upper:]' '[:lower:]')
 
 # XDebug should be loaded after opcache
 %global ini_name  15-%{pecl_name}.ini
@@ -36,15 +36,15 @@ Version:        %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
 Release:        1%{?dist}
 Source0:        https://github.com/%{pecl_name}/%{pecl_name}/archive/%{gh_commit}/%{pecl_name}-%{upstream_version}%{?upstream_prever}-%{gh_short}.tar.gz
 
-# The Xdebug License, version 1.01
-# (Based on "The PHP License", version 3.0)
-License:        BSD
+# The Xdebug License, SPDX see
+# https://gitlab.com/fedora/legal/fedora-license-data/-/issues/95
+# https://github.com/spdx/license-list-XML/issues/1718
+License:        PHP-3.01
 URL:            https://xdebug.org/
 
 BuildRequires:  gcc
 BuildRequires:  make
-BuildRequires:  php-devel >= 7.2
-BuildRequires:  php-devel <  8.2
+BuildRequires:  php-devel >= 8.0
 BuildRequires:  php-pear
 BuildRequires:  php-simplexml
 BuildRequires:  libtool
@@ -220,6 +220,10 @@ REPORT_EXIT_STATUS=1 \
 
 
 %changelog
+* Fri Dec  9 2022 Remi Collet <remi@remirepo.net> - 3.2.0-1
+- update to 3.2.0
+- use PHP-3.01 as SPDX License identifier
+
 * Tue Nov  8 2022 Remi Collet <remi@remirepo.net> - 3.1.6-1
 - update to 3.1.6
 
