@@ -6,6 +6,7 @@ services:
       context: .
       args:
         os: $RL8
+        image: php-8.2
   rocky9build:
     volumes:
       - rpm9rocky:/home/centos/rpmbuild/RPMS
@@ -13,6 +14,7 @@ services:
       context: .
       args:
         os: $RL9
+        image: php-8.2
   stream9build:
     volumes:
       - rpm9stream:/home/centos/rpmbuild/RPMS
@@ -20,6 +22,7 @@ services:
       context: .
       args:
         os: $OS9
+        image: php-8.2
 
 volumes:
   rpm8rocky:
