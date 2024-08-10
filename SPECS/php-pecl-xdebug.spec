@@ -1,6 +1,6 @@
 # Fedora spec file for php-pecl-xdebug
 #
-# Copyright (c) 2010-2022 Remi Collet
+# Copyright (c) 2010-2023 Remi Collet
 # Copyright (c) 2006-2009 Christopher Stone
 #
 # License: MIT
@@ -11,21 +11,20 @@
 
 %bcond_without     tests
 
-# we don't want -z defs linker flag
-%undefine _strict_symbol_defs_build
-
 %define _debugsource_template %{nil}
 %define debug_package %{nil}
 
 %global pecl_name  xdebug
 %global with_zts   0%{!?_without_zts:%{?__ztsphp:1}}
-%global gh_commit  77aaa48269a6b0be19cf1557dd8d2e9f1fa211e9
+%global gh_commit  15d672e84caa6015d1b2b509aa13a0528d6e9a7e
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 
 # version/release
-%global upstream_version 3.2.0
-#global upstream_prever  RC2
+%global upstream_version 3.3.0
+#global upstream_prever  alpha3
 #global upstream_lower   %%(echo %%{upstream_prever} | tr '[:upper:]' '[:lower:]')
+%global sources          src
+%global _configure       ../%{sources}/configure
 
 # XDebug should be loaded after opcache
 %global ini_name  15-%{pecl_name}.ini
@@ -36,10 +35,7 @@ Version:        %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
 Release:        1%{?dist}
 Source0:        https://github.com/%{pecl_name}/%{pecl_name}/archive/%{gh_commit}/%{pecl_name}-%{upstream_version}%{?upstream_prever}-%{gh_short}.tar.gz
 
-# The Xdebug License, SPDX see
-# https://gitlab.com/fedora/legal/fedora-license-data/-/issues/95
-# https://github.com/spdx/license-list-XML/issues/1718
-License:        PHP-3.01
+License:        Xdebug-1.03
 URL:            https://xdebug.org/
 
 BuildRequires:  gcc
@@ -49,6 +45,7 @@ BuildRequires:  php-pear
 BuildRequires:  php-simplexml
 BuildRequires:  libtool
 BuildRequires:  php-soap
+BuildRequires:  pkgconfig(zlib) >= 1.2.9
 
 Requires:       php(zend-abi) = %{php_zend_api}
 Requires:       php(api) = %{php_core_api}
@@ -90,12 +87,12 @@ Documentation: https://xdebug.org/docs/
 
 %prep
 %setup -qc
-mv %{pecl_name}-%{gh_commit} NTS
-mv NTS/package.xml .
+mv %{pecl_name}-%{gh_commit} %{sources}
+mv %{sources}/package.xml .
 
 sed -e '/LICENSE/s/role="doc"/role="src"/' -i package.xml
 
-cd NTS
+cd %{sources}
 # Check extension version
 ver=$(sed -n '/XDEBUG_VERSION/{s/.* "//;s/".*$//;p}' php_xdebug.h)
 if test "$ver" != "%{upstream_version}%{?upstream_prever}%{?gh_date:-dev}"; then
@@ -104,36 +101,39 @@ if test "$ver" != "%{upstream_version}%{?upstream_prever}%{?gh_date:-dev}"; then
 fi
 cd ..
 
+mkdir NTS
 %if %{with_zts}
-# Duplicate source tree for NTS / ZTS build
-cp -pr NTS ZTS
+mkdir ZTS
 %endif
 
-cat << 'EOF' | tee %{ini_name}
+cat << 'EOF' >%{ini_name}
 ; Enable xdebug extension module
 zend_extension=%{pecl_name}.so
 
 ; Configuration
 ; See https://xdebug.org/docs/all_settings
-
 EOF
-sed -e '1d' NTS/%{pecl_name}.ini >>%{ini_name}
-
+sed -e '1,2d' %{sources}/%{pecl_name}.ini >>%{ini_name}
+ 
+head -n15 <%{ini_name}
 
 %build
-cd NTS
-%{_bindir}/phpize
+cd %{sources}
+%{__phpize}
+
+cd ../NTS
 %configure \
     --enable-xdebug  \
-    --with-php-config=%{_bindir}/php-config
+    --with-xdebug-compression \
+    --with-php-config=%{__phpconfig}
 make %{?_smp_mflags}
 
 %if %{with_zts}
 cd ../ZTS
-%{_bindir}/zts-phpize
 %configure \
     --enable-xdebug  \
-    --with-php-config=%{_bindir}/zts-php-config
+    --with-xdebug-compression \
+    --with-php-config=%{__ztsphpconfig}
 make %{?_smp_mflags}
 %endif
 
@@ -156,10 +156,11 @@ install -Dpm 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
 %endif
 
 # Documentation
-for i in $(grep 'role="doc"' package.xml | sed -e 's/^.*name="//;s/".*$//')
+cd %{sources}
+for i in $(grep 'role="doc"' ../package.xml | sed -e 's/^.*name="//;s/".*$//')
 do
-  [ -f NTS/contrib/$i ] && j=contrib/$i || j=$i
-  install -Dpm 644 NTS/$j %{buildroot}%{pecl_docdir}/%{pecl_name}/$j
+  [ -f contrib/$i ] && j=contrib/$i || j=$i
+  install -Dpm 644 $j %{buildroot}%{pecl_docdir}/%{pecl_name}/$j
 done
 
 
@@ -172,32 +173,51 @@ for mod in simplexml; do
   fi
 done
 
-# only check if build extension can be loaded
-%{_bindir}/php \
+: check if NTS extension can be loaded
+%{__php} \
     --no-php-ini \
     --define zend_extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
-    --modules | grep Xdebug
+    --modules | grep '^Xdebug$'
+
+: check if provided config file is usable
+%{__php} \
+    --no-php-ini \
+    -d extension_dir=%{buildroot}%{php_extdir} \
+    -c %{buildroot}%{php_inidir}/%{ini_name} -v
+%{__php} \
+    --no-php-ini \
+    -d extension_dir=%{buildroot}%{php_extdir} \
+    -c %{buildroot}%{php_inidir}/%{ini_name} -v 2>err.log \
+        | grep 'with Xdebug v%{upstream_version}%{?upstream_prever}'
+if [ -s err.log ]; then
+    cat err.log
+    exit 1
+fi
 
 %if %{with_zts}
-%{_bindir}/zts-php \
+: check if ZTS extension can be loaded
+%{__ztsphp} \
     --no-php-ini \
     --define zend_extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
-    --modules | grep Xdebug
+    --modules | grep '^Xdebug$'
 %endif
 
 %if %{with tests}
-cd NTS
+cd %{sources}
 : Upstream test suite NTS extension
 
 # see https://bugs.xdebug.org/view.php?id=2048
 rm tests/base/bug02036.phpt
 # Erratic result
 rm tests/debugger/bug00998-ipv6.phpt
+# see https://bugs.xdebug.org/view.php?id=2220
+rm tests/debugger/bug01388-08.phpt
+rm tests/debugger/bug02006-001.phpt
 
 # bug00886 is marked as slow as it uses a lot of disk space
 TEST_OPTS="-q -x --show-diff"
 
-TEST_PHP_EXECUTABLE=%{_bindir}/php \
+TEST_PHP_EXECUTABLE=%{__php} \
 TEST_PHP_ARGS="-n $modules -d zend_extension=%{buildroot}%{php_extdir}/%{pecl_name}.so" \
 REPORT_EXIT_STATUS=1 \
 %{__php} -n run-xdebug-tests.php $TEST_OPTS
@@ -206,7 +226,7 @@ REPORT_EXIT_STATUS=1 \
 %endif
 
 %files
-%license NTS/LICENSE
+%license %{sources}/LICENSE
 %doc %{pecl_docdir}/%{pecl_name}
 %{pecl_xmldir}/%{name}.xml
 
@@ -220,6 +240,9 @@ REPORT_EXIT_STATUS=1 \
 
 
 %changelog
+* Fri Dec  1 2023 Remi Collet <remi@remirepo.net> - 3.3.0-1
+- update to 3.3.0
+
 * Fri Dec  9 2022 Remi Collet <remi@remirepo.net> - 3.2.0-1
 - update to 3.2.0
 - use PHP-3.01 as SPDX License identifier
