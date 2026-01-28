@@ -9,6 +9,8 @@
 # Please, preserve the changelog entries
 #
 
+%global php_base   php
+
 %bcond_without     tests
 
 %define _debugsource_template %{nil}
@@ -17,19 +19,19 @@
 %global pie_vend   xdebug
 %global pie_proj   xdebug
 %global pecl_name  xdebug
-%global gh_commit  4085f1421d54aa60c40fe334f5c7a118a045200f
+%global gh_commit  32dcc3da7bbff171f67e803f28ef4c098f8e2caf
 %global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 
 # version/release
-%global upstream_version 3.4.5
-#global upstream_prever  beta1
-%global upstream_lower   %(echo %{upstream_prever} | tr '[:upper:]' '[:lower:]')
+%global upstream_version 3.5.0
+#global upstream_prever  alpha3
+#global upstream_lower   %%(echo %%{upstream_prever} | tr '[:upper:]' '[:lower:]')
 %global sources          src
 
 # XDebug should be loaded after opcache
 %global ini_name  15-%{pecl_name}.ini
 
-Name:           php-pecl-xdebug
+Name:           %{php_base}-pecl-xdebug
 Summary:        Provides functions for function traces and profiling
 Version:        %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
 Release:        2%{?dist}
@@ -42,11 +44,11 @@ ExcludeArch:    %{ix86}
 
 BuildRequires:  gcc
 BuildRequires:  make
-BuildRequires: (php-devel >= 8.0 with php-devel < 8.5)
+BuildRequires: (%{php_base}-devel >= 8.0 with %{php_base}-devel < 8.5)
 BuildRequires:  php-pear
-BuildRequires:  php-simplexml
 BuildRequires:  libtool
-BuildRequires:  php-soap
+BuildRequires:  %{php_base}-xml
+BuildRequires:  %{php_base}-soap
 BuildRequires:  pkgconfig(zlib) >= 1.2.9
 
 Requires:       php(zend-abi) = %{php_zend_api}
@@ -59,8 +61,15 @@ Provides:       php-pecl(Xdebug)%{?_isa}         = %{version}
 Provides:       php-pie(%{pie_vend}/%{pie_proj}) = %{version}
 Provides:       php-%{pie_vend}-%{pie_proj}      = %{version}
 
+%if "%{php_base}" != "php"
+Requires:       %{php_base}-common%{?_isa}
+Conflicts:      php-pecl-%{pecl_name}3
+Provides:       php-pecl-%{pecl_name}3 = %{version}-%{release}
+Provides:       php-pecl-%{pecl_name}3%{?_isa}   = %{version}-%{release}
+%else
 # package was renamed on new major version
 Obsoletes:      php-pecl-%{pecl_name}            < 3
+%endif
 Provides:       php-pecl-%{pecl_name}            = %{version}-%{release}
 Provides:       php-pecl-%{pecl_name}%{?_isa}    = %{version}-%{release}
 
@@ -207,6 +216,12 @@ TEST_PHP_ARGS="-n $modules -d zend_extension=%{buildroot}%{php_extdir}/%{pecl_na
 
 
 %changelog
+* Sat Jan 17 2026 Fedora Release Engineering <releng@fedoraproject.org> - 3.5.0-2
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_44_Mass_Rebuild
+
+* Thu Dec  4 2025 Remi Collet <remi@remirepo.net> - 3.5.0-1
+- update to 3.5.0
+
 * Fri Jul 25 2025 Fedora Release Engineering <releng@fedoraproject.org> - 3.4.5-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_43_Mass_Rebuild
 
