@@ -193,6 +193,9 @@ cd %{sources}
 rm tests/base/bug02036*.phpt
 # Erratic result
 rm tests/debugger/bug00998-ipv6.phpt
+# see https://bugs.xdebug.org/view.php?id=2434
+rm tests/debugger/bug02424-*.phpt
+rm tests/debugger/maps/map-minimum-path/minimum-path.phpt
 
 # bug00886 is marked as slow as it uses a lot of disk space
 TEST_OPTS="-q -x --show-diff"
