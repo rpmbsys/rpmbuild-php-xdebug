@@ -19,11 +19,9 @@
 %global pie_vend   xdebug
 %global pie_proj   xdebug
 %global pecl_name  xdebug
-%global gh_commit  32dcc3da7bbff171f67e803f28ef4c098f8e2caf
-%global gh_short   %(c=%{gh_commit}; echo ${c:0:7})
 
 # version/release
-%global upstream_version 3.5.0
+%global upstream_version 3.5.3
 #global upstream_prever  alpha3
 #global upstream_lower   %%(echo %%{upstream_prever} | tr '[:upper:]' '[:lower:]')
 %global sources          src
@@ -34,8 +32,8 @@
 Name:           %{php_base}-pecl-xdebug
 Summary:        Provides functions for function traces and profiling
 Version:        %{upstream_version}%{?upstream_prever:~%{upstream_lower}}
-Release:        2%{?dist}
-Source0:        https://github.com/%{pecl_name}/%{pecl_name}/archive/%{gh_commit}/%{pecl_name}-%{upstream_version}%{?upstream_prever}-%{gh_short}.tar.gz
+Release:        1%{?dist}
+Source0:        https://github.com/%{pecl_name}/%{pecl_name}/archive/%{upstream_version}%{?upstream_prever}/%{pecl_name}-%{upstream_version}%{?upstream_prever}.tar.gz
 
 License:        Xdebug-1.03
 URL:            https://xdebug.org/
@@ -44,7 +42,7 @@ ExcludeArch:    %{ix86}
 
 BuildRequires:  gcc
 BuildRequires:  make
-BuildRequires: (%{php_base}-devel >= 8.0 with %{php_base}-devel < 8.5)
+BuildRequires: (%{php_base}-devel >= 8.0 with %{php_base}-devel < 8.6)
 BuildRequires:  php-pear
 BuildRequires:  libtool
 BuildRequires:  %{php_base}-xml
@@ -97,7 +95,7 @@ Documentation: https://xdebug.org/docs/
 
 %prep
 %setup -qc
-mv %{pecl_name}-%{gh_commit} %{sources}
+mv %{pecl_name}-%{upstream_version}%{?upstream_prever} %{sources}
 mv %{sources}/package.xml .
 
 sed -e '/LICENSE/s/role="doc"/role="src"/' -i package.xml
@@ -216,6 +214,10 @@ TEST_PHP_ARGS="-n $modules -d zend_extension=%{buildroot}%{php_extdir}/%{pecl_na
 
 
 %changelog
+* Tue Jun  9 2026 Remi Collet <remi@remirepo.net> - 3.5.3-1
+- update to 3.5.3
+- open https://bugs.xdebug.org/view.php?id=2434 test failure on aarch64
+
 * Sat Jan 17 2026 Fedora Release Engineering <releng@fedoraproject.org> - 3.5.0-2
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_44_Mass_Rebuild
 
